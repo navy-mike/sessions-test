@@ -153,11 +153,39 @@ function getCallerIP(request) {
 };
 module.exports.getCallerIP = getCallerIP;
 
+function getMillisecs() {
+  let currdt = new Date();
+  let msecs = currdt.getTime();
+  return msecs; //msecs since 01/01/1970
+};
+
+function getDTfromMS(milliseconds) {
+  let fromDate = null;
+  if (milliseconds != undefined) {
+    let dtmsecs = 0;
+    if (typeof (milliseconds) === 'string') {
+      dtmsecs = parseInt(milliseconds, 10);
+    }
+    else {
+      dtmsecs = milliseconds;
+    }
+    let msdate = new Date(dtmsecs);
+    fromDate = msdate.toString('MM/dd/yyyy HH:mm:ss');
+  }
+  return fromDate;
+};
+
 function sessAdd(sessionid, ipadd, browsertype) {
 
 };
 
 function testsession() {
+  let msecs = getMillisecs();
+  let dtstring = '';
+  if (msecs > 0) {
+    dtstring = getDTfromMS(msecs)
+
+  }
   //map methods
   // get()
   // set()
