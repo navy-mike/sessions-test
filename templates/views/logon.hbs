@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>UCIREG Logon</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+
+<body style="background-color: #a6cAF0;">
+  <div class="main-content">
+    {{>header}}
+    <div id="notifyuser-name">{{name}}</div>
+    <div id="notifyuser-sessionid">{{sessionid}}</div>
+    <div id="notifyuser-ipaddress">{{ipaddress}}</div>
+    <form id='logon'>
+      <input placeholder="Login Email Address" name="loginemail" id="loginemail" style="width: 160px; height: 22px;"
+        size="20" type="text">
+      <br />
+      <button id="loginbtn" formaction="/loginsubmit" formmethod="POST" type="submit">Login</button>
+
+    </form>
+  </div>
+  {{>footer}}
+
+</html>

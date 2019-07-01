@@ -1,0 +1,136 @@
+/*ELEMENT SELECTORS*/
+html,body {
+  color: #000000;
+  background-color: #A6C6F0;
+}
+
+a {
+  color: #0000FF;
+}
+
+  a:visited {
+    color: #800080;
+  }
+
+  a:hover {
+    color: #008000;
+  }
+
+  a:active {
+    color: #FF0000;
+  }
+  
+#form_contactus {
+  /* Just to center the form on the page */
+  margin: 0 auto;
+  width: 400px;
+  /* To see the outline of the form */
+  padding: 1em;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 12px;
+  font-weight: bold;
+}  
+
+#form_contactus_div {
+  background-color: #A6C6F0;
+  padding-left: 34px;
+}
+#form_contactus_label{
+  display: inline-block;
+  width: 138px;
+  text-align: right;
+  margin-top: 8px;
+}
+
+#form_contactus_label_comments {
+  display: inline-block;
+  width: 80px;
+  text-align: left;
+}
+
+#form_contactus_textarea {
+ box-sizing: border-box;
+ margin-bottom: 8px;
+ width: 330px;
+ height: 80px;
+}  
+
+#form_contactus_table {
+  width: 330px;
+  height: 40px;
+  border: 1px solid black;
+  margin-bottom: 8px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 10px;
+  font-weight: bold;
+  color: blue;  
+}
+
+
+#form_contactus_label_count {
+  display: inline-block;
+  width: 256px;
+  text-align: right;
+  margin-bottom: 8px;
+}
+
+#form_contactus_submit_button {
+  border-radius: 20px;
+  background-color: #A6C6F0;
+}
+
+#formcontactus_cancel_button {
+  border-radius: 20px;
+  background-color: #A6C6F0;
+}
+
+/*ID SELECTORS*/
+#contactus-main-content{
+  width: 420px;
+  background-color: #A6C6F0;
+}
+
+#mainCaptcha{
+	position: relative;
+	left : 12px;
+  top: 10px;
+  color: #FFFFFF;
+	
+}
+
+#refresh{
+	position:relative;
+	left:230px;
+	width:30px;
+	height:30px;
+	bottom:45px;
+	background-image: url(../img/alta.png/>);
+}
+
+#txtInput, #Button1{
+	position: relative;
+	left:40px;
+	bottom: 40px;
+}
+
+/*CLASSES */
+.capt{
+	background-color:grey;
+	width: 100px;
+	height: 40px;
+	
+}
+
+.warning_red {
+  color: red;
+  font-weight: bold;
+ }
+ 
+ .warning_maroon {
+  color: maroon;
+  font-weight: bold;
+ }
+ 
+.contactus_submit_div{
+  border-radius: 12px;
+}

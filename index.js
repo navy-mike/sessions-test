@@ -7,16 +7,48 @@ const cookieparser = require('cookie-parser');
 const crypto = require('crypto');
 const os = require('os');
 
-const viewsPath = __dirname;
-const publicPath = __dirname;
-
+const appname = 'sessions_test';
 
 //app specific
 global.gs_sessionsecret = 'jellox';
 
 //user specific
-global.gs_isauth = 0;
+global.msessionvars = {
+  IPADD: "",    //IPADDRESS OF USER
+  BTYPE: "",    //BROWSER
+  UID: "",      //USERID
+  BID: "",      //BIKEID
+  ACTYPE: "",   //ACCESS TYPE
+  UEMAIL: "",   //USER EMAIL
+  UAUTH: "",    //USER AUTHORIZED Y/N
+  SPARE: ""       //SPARE
+};
 
+global.mblanksessionvars = {
+  IPADD: null,    //IPADDRESS OF USER
+  BTYPE: null,    //BROWSER
+  UID: null,      //USERID
+  BID: null,      //BIKEID
+  ACTYPE: null,   //ACCESS TYPE
+  UEMAIL: null,   //USER EMAIL
+  UAUTH: null,    //USER AUTHORIZED Y/N
+  SPARE: null     //SPARE VARIABLE
+};
+
+global.msIPADD = new Map();  //HOLDS SESSION IP ADDRESS ie: 10.100.1.48
+global.msBTYPE = new Map();  //HOLDS SESSION BROWSER TYPE ie: IE, CHROME, ETC
+global.msUID = new Map();    //HOLDS SESSION USER ID  ie: 1,22,etc
+global.msBID = new Map();    //HOLDS SESSION BIKE ID  ie: 23,99,etc
+global.msACTYPE = new Map(); //HOLDS SESSION ACCESS TYPE: PERSON, SKI, SNOWBOARD
+global.msUEMAIL = new Map(); //HOLDS SESSION USERS EMAIL ADDRESS
+global.msUAUTH = new Map();  //HOLDS SESSION USER IS AUTHENTICATED ie: 1=yes 0=no
+global.msSPARE = new Map();  //HOLDS SESSION SPARE VARIABLE
+global.msTTL = new Map();    //HOLDS THE DATETIME in ms the the session ID was added the first time. KEY=sessionid VALUE=MILLISECONDS
+
+
+
+
+console.log('__dirname=' + __dirname);
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -25,9 +57,17 @@ function initialize() {
   try {
     return new Promise((resolve, reject) => {
 
+      const publicDirectoryPath = path.join(__dirname, appname, '../public');       //c:\nodejs_stuff\uciregadm\public
+      const viewsPath = path.join(__dirname, appname, '../templates/views');        //c:\nodejs_stuff\uciregadm\templates\views
+      const partialsPath = path.join(__dirname, appname, '../templates/partials');  //c:\nodejs_stuff\uciregadm\templates\partials
+
+
       console.log('initilization....');
       console.log("Platform: " + os.platform());
       console.log("Architecture: " + os.arch());
+      console.log("publicDirectoryPath=" + publicDirectoryPath); //C:\nodejs_stuff\uciregadm\public
+      console.log("viewsPath=" + viewsPath);                //C:\nodejs_stuff\uciregadm\templates\views
+      console.log("partialsPath=" + partialsPath);               //C:\nodejs_stuff\uciregadm\templates\partials
 
       hbs.registerHelper('copyrightYear', function () {
         let year = new Date().getFullYear();
@@ -35,17 +75,15 @@ function initialize() {
       });
 
       //setup static director to server
-      app.use(express.static(publicPath)); //Sets the server to serve up any filename.html thats within the public folder.
+      app.use(express.static(publicDirectoryPath)); //Sets the server to serve up any filename.html thats within the public folder.
       //app.use(express.urlencoded());
       app.use(cookieparser());
       //setup handlebars engine and views locations
       app.set('view engine', 'hbs'); //get handlebars setup to use in app
       app.set('views', viewsPath); //<=point to views path
+      hbs.registerPartials(partialsPath); //<=point to templates partials path
       app.use(bodyparser.json()); // for parsing application/json
       app.use(bodyparser.urlencoded({ extended: true }));
-
-      console.log('views path=' + viewsPath);
-
       //======= BEGIN ROUTES =======
       app.get('/', async (req, res) => {
         let sessionid = crypto.randomBytes(16).toString("hex");
@@ -54,20 +92,38 @@ function initialize() {
         let ipaddress = getCallerIP(req);
         console.log('ip=' + ipaddress);
 
-        res.end();
+        res.render('logon', {
+          title: 'System Logon',
+          name: 'test',
+          sessionid: sessionid,
+          ipaddress: ipaddress
+        });
       });//END app.get('/',
 
-      app.get('/cookiesnotice', async (req, res) => {
-        // gs_pagefrom = 'HOME PAGE';
-        // gs_errormsg = 'You must have cookies enabled for the Utah County Item ' + gs_crlf + 'Registration system to work. ';
-        // gs_errormsg += 'If you need help allowing ' + gs_crlf + 'your browser to enable cookies, you can call our system ' + gs_crlf;
-        // gs_errormsg += 'administrator at 801-851-4008. Thank you.';
-        // res.render('pageerror', {
-        //   title: 'COOKIES ARE NOT ENABLED',
-        //   name: 'Application Error',
-        //   errorMessage: ''
-        // })
-        res.end();
+      app.post('/loginsubmit', async (req, res) => {
+
+        var emailaddress = req.body.loginemail;
+        console.log('emailaddress=' + emailaddress);
+        res.render('notifyuser', {
+          title: 'successful logon',
+          name: 'valid email address',
+          error: '',
+          usermessage: emailaddress
+        })
+      });
+
+      app.post('/close', async (req, res) => {
+        res.render('close', {
+          title: 'successful logout'
+        })
+      });
+
+      app.get('*', async (req, res) => {
+        res.send("no get route found!");
+      });
+
+      app.post('*', async (req, res) => {
+        res.send("no post route found!");
       });
       //======= END OF ROUTES =======
 
@@ -81,7 +137,7 @@ function initialize() {
   catch (err) {
     console.log('index.js initialize error. err=' + err);
   }
-}//end initilize
+};//end initilize
 module.exports.initialize = initialize;
 
 
@@ -92,20 +148,14 @@ function getCallerIP(request) {
     request.connection.socket.remoteAddress;
   ip = ip.split(',')[0];
   ip = ip.split(':').slice(-1); //in case the ip returned in a format: "::ffff:146.xxx.xxx.xxx"
+  let host = request.host;
   return ip;
-}
+};
 module.exports.getCallerIP = getCallerIP;
 
+function sessAdd(sessionid, ipadd, browsertype) {
 
-let sessinfo = {
-  ID: "",
-  IP: "",
-  UID: ""
 };
-module.exports.sessinfo = sessinfo;
-
-let mysessions;
-module.exports.mysessions = mysessions;
 
 function testsession() {
   //map methods
@@ -116,7 +166,7 @@ function testsession() {
   let mymap = new Map();
   let sessionID = "abcd";
   let ipuid = "1.1.1.1|0";
-  mymap.set(sessionID, ipuid);
+  mymap.set(sessionID, msessionvars);
   sessionID = "efgh";
   ipuid = "2.2.2.2|9";
   mymap.set(sessionID, ipuid);
@@ -126,15 +176,22 @@ function testsession() {
   if (mymap) {
     let mapsize = mymap.size;
     console.log('mapsize=' + mapsize);
+    console.log('---------------------------');
+    let newsessioninfo = new Array();
+    newsessioninfo = mymap.get("abcd");
+    console.log("abcd data=" + newsessioninfo.ID + ' ' + newsessioninfo.IP + ' ' + newsessioninfo.UID);
     let mapdata = mymap.get("lmno");
     console.log("lmno data=" + mapdata);
+    console.log('---------------------------');
     mymap.delete("efgh");
     mapdata = mymap.get("efgh");
-    console.log("efgh key=" + mapdata);
+    console.log("deleted efgh key=" + mapdata);
+    console.log('---------------------------');
     mapdata = mymap.has("lmno");
     console.log("lmno exists=" + mapdata);
     mapdata = mymap.has("efgh");
     console.log("efgh exists=" + mapdata);
+    console.log('---------------------------');
     console.log("--keys--");
     let mapkey = null;
     for (mapkey of mymap.keys()) {
@@ -145,11 +202,14 @@ function testsession() {
     for (mapvalue of mymap.values()) {
       console.log(mapvalue);
     }
-    mapkey = null;
-    mapvalue = null;
-    for ([mapkey, mapvalue] of mymap.entries()) {
-      console.log(mapkey, mapvalue);
-    }
+    console.log('---------------------------');
+    //map.entries not compatable with IE!
+    // mapkey = null;
+    // mapvalue = null;
+    // console.log("mapkey/mapvalue");
+    // for ([mapkey, mapvalue] of mymap.entries()) {
+    //   console.log(mapkey, mapvalue);
+    // }
 
     //mymap.clear(); //removes all items from the map
   }
